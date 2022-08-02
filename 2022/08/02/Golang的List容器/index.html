@@ -1,0 +1,269 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"><title>Golang的list容器 | KiceAmberのBlog</title><meta name="keywords" content="Golang"><meta name="author" content="KiceAmber,1045324967@qq.com"><meta name="copyright" content="KiceAmber"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="ffffff"><meta name="description" content="list包Golang内置的容器list是一个双向链表，位于list包中 list包中共有两大结构体：List和Element，List用来连接Element节点，形成链表 结构体的源码定义分别如下： List 1234type List struct &amp;#123;    root Element &#x2F;&#x2F; sentinel list element, only &amp;root, root.pre">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Golang的list容器">
+<meta property="og:url" content="https://kiceamber.top/2022/08/02/Golang%E7%9A%84List%E5%AE%B9%E5%99%A8/index.html">
+<meta property="og:site_name" content="KiceAmberのBlog">
+<meta property="og:description" content="list包Golang内置的容器list是一个双向链表，位于list包中 list包中共有两大结构体：List和Element，List用来连接Element节点，形成链表 结构体的源码定义分别如下： List 1234type List struct &amp;#123;    root Element &#x2F;&#x2F; sentinel list element, only &amp;root, root.pre">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://s2.loli.net/2022/08/02/fStp4cIjMhH8un3.jpg">
+<meta property="article:published_time" content="2022-08-02T10:10:31.000Z">
+<meta property="article:modified_time" content="2022-08-02T11:35:15.041Z">
+<meta property="article:author" content="KiceAmber">
+<meta property="article:tag" content="Golang">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://s2.loli.net/2022/08/02/fStp4cIjMhH8un3.jpg"><link rel="shortcut icon" href="https://s2.loli.net/2022/07/31/2pn6SykVYa3rRwf.png"><link rel="canonical" href="https://kiceamber.top/2022/08/02/Golang%E7%9A%84List%E5%AE%B9%E5%99%A8/"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/node-snackbar/dist/snackbar.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox.min.css" media="print" onload="this.media='all'"><script>const GLOBAL_CONFIG = { 
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: undefined,
+  noticeOutdate: undefined,
+  highlight: {"plugin":"highlighjs","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false},
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '天',
+  date_suffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'fancybox',
+  Snackbar: {"chs_to_cht":"你已切换为繁体","cht_to_chs":"你已切换为简体","day_to_night":"你已切换为深色模式","night_to_day":"你已切换为浅色模式","bgLight":"#49b1f5","bgDark":"#1f1f1f","position":"bottom-left"},
+  source: {
+    justifiedGallery: {
+      js: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.js',
+      css: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.css'
+    }
+  },
+  isPhotoFigcaption: false,
+  islazyload: false,
+  isAnchor: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'Golang的list容器',
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isToc: true,
+  postUpdate: '2022-08-02 19:35:15'
+}</script><noscript><style type="text/css">
+  #nav {
+    opacity: 1
+  }
+  .justified-gallery img {
+    opacity: 1
+  }
+
+  #recent-posts time,
+  #post-meta time {
+    display: inline !important
+  }
+</style></noscript><script>(win=>{
+    win.saveToLocal = {
+      set: function setWithExpiry(key, value, ttl) {
+        if (ttl === 0) return
+        const now = new Date()
+        const expiryDay = ttl * 86400000
+        const item = {
+          value: value,
+          expiry: now.getTime() + expiryDay,
+        }
+        localStorage.setItem(key, JSON.stringify(item))
+      },
+
+      get: function getWithExpiry(key) {
+        const itemStr = localStorage.getItem(key)
+
+        if (!itemStr) {
+          return undefined
+        }
+        const item = JSON.parse(itemStr)
+        const now = new Date()
+
+        if (now.getTime() > item.expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return item.value
+      }
+    }
+  
+    win.getScript = url => new Promise((resolve, reject) => {
+      const script = document.createElement('script')
+      script.src = url
+      script.async = true
+      script.onerror = reject
+      script.onload = script.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        script.onload = script.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(script)
+    })
+  
+      win.activateDarkMode = function () {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      win.activateLightMode = function () {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', 'ffffff')
+        }
+      }
+      const t = saveToLocal.get('theme')
+    
+          if (t === 'dark') activateDarkMode()
+          else if (t === 'light') activateLightMode()
+        
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        if (asideStatus === 'hide') {
+          document.documentElement.classList.add('hide-aside')
+        } else {
+          document.documentElement.classList.remove('hide-aside')
+        }
+      }
+    
+    const detectApple = () => {
+      if(/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)){
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+    })(window)</script><meta name="generator" content="Hexo 6.2.0"></head><body><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img is-center"><img src="https://s2.loli.net/2022/07/31/Jb6nEp37uv8gelX.jpg" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="sidebar-site-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">2</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">2</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">1</div></a></div><hr/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 文章</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url('https://s2.loli.net/2022/08/02/fStp4cIjMhH8un3.jpg')"><nav id="nav"><span id="blog_name"><a id="site-name" href="/">KiceAmberのBlog</a></span><div id="menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 文章</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div></div><div id="toggle-menu"><a class="site-page"><i class="fas fa-bars fa-fw"></i></a></div></div></nav><div id="post-info"><h1 class="post-title">Golang的list容器</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2022-08-02T10:10:31.000Z" title="发表于 2022-08-02 18:10:31">2022-08-02</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2022-08-02T11:35:15.041Z" title="更新于 2022-08-02 19:35:15">2022-08-02</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E5%90%8E%E7%AB%AF/">后端</a></span></div><div class="meta-secondline"></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="post-content" id="article-container"><h1 id="list包"><a href="#list包" class="headerlink" title="list包"></a>list包</h1><p>Golang内置的容器<code>list</code>是一个双向链表，位于<code>list</code>包中</p>
+<p><code>list</code>包中共有两大结构体：<code>List</code>和<code>Element</code>，<code>List</code>用来连接<code>Element</code>节点，形成链表</p>
+<p>结构体的源码定义分别如下：</p>
+<p><strong>List</strong></p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">type</span> List <span class="keyword">struct</span> &#123;</span><br><span class="line">    root Element <span class="comment">// sentinel list element, only &amp;root, root.prev, and root.next are used</span></span><br><span class="line">    <span class="built_in">len</span>  <span class="type">int</span>     <span class="comment">// current list length excluding (this) sentinel element</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>其中两部分含义：</p>
+<ul>
+<li><p><code>root</code>：类型为<code>Element</code>的结构体实例</p>
+</li>
+<li><p><code>len</code>：记录<code>List</code>的长度（哨兵节点除外）</p>
+</li>
+</ul>
+<p><strong>Element</strong></p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">type</span> Element <span class="keyword">struct</span> &#123;</span><br><span class="line">    list *List</span><br><span class="line">    Value <span class="keyword">interface</span>&#123;&#125;</span><br><span class="line">    next, prev *Element</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>其中三部分含义：</p>
+<ul>
+<li><p><code>list</code>：指向<code>List</code>的指针，用于标识当前节点</p>
+</li>
+<li><p><code>Value</code>：用来存储元素的值，因为是<code>interface&#123;&#125;</code>类型（空接口类型），可以接收任何值</p>
+</li>
+<li><p><code>next</code>和<code>prev</code>：指向<code>Element</code>的指针，定位后一个节点和前一个节点</p>
+</li>
+</ul>
+<p><code>List</code>内部实现，所以<code>list.root</code>既是最后一个元素的下一个元素，也是第一个元素的上一个元素</p>
+<h1 id="方法实现"><a href="#方法实现" class="headerlink" title="方法实现"></a>方法实现</h1><p><code>list</code>包中的方法实现分为以下五个部分：</p>
+<ul>
+<li><p>初始化链表</p>
+</li>
+<li><p>获取元素或链表指针</p>
+</li>
+<li><p>插入元素</p>
+</li>
+<li><p>删除元素</p>
+</li>
+<li><p>移动元素</p>
+</li>
+<li><p>合并链表</p>
+</li>
+</ul>
+<h2 id="初始化链表"><a href="#初始化链表" class="headerlink" title="初始化链表"></a>初始化链表</h2><ul>
+<li><p><code>Init()</code>：用来<strong>初始化</strong>一个链表，或者是<strong>清空链表</strong></p>
+</li>
+<li><p><code>lazyInit()</code>：<strong>懒初始化</strong>一个零值的链表，从实现上可以看出，只有当哨兵节点的<code>next</code>节点为空时，才会初始化链表</p>
+</li>
+</ul>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(l *List)</span></span> Init() *List &#123;</span><br><span class="line">    l.root.next = &amp;l.root</span><br><span class="line">    l.root.prev = &amp;l.root</span><br><span class="line">    l.<span class="built_in">len</span> = <span class="number">0</span></span><br><span class="line">    <span class="keyword">return</span> l</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(l *List)</span></span> lazyInit() &#123;</span><br><span class="line">    <span class="keyword">if</span> l.root.next == <span class="literal">nil</span> &#123;</span><br><span class="line">        l.Init()</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+<h2 id="获取元素或链表指针"><a href="#获取元素或链表指针" class="headerlink" title="获取元素或链表指针"></a>获取元素或链表指针</h2><ul>
+<li><code>Next()</code>：返回<strong>当前节点</strong>的下一个节点或者nil。从实现可以看出，当<code>list</code>为空或者<strong>下一个节点为哨兵节点</strong>时，返回<code>nil</code></li>
+<li><code>Prev()</code>：返回<strong>当前节点</strong>的上一个节点或者nil，跟上面类似</li>
+<li><code>New()</code>：返回一个初始化完成的链表</li>
+<li><code>Len()</code>：回链表中的元素个数，时间复杂度为O(1)</li>
+<li><code>Front()</code>：返回链表的第一个元素。当链表为空时，返回nil</li>
+<li><code>Back()</code>：返回链表的最后一个元素。当链表为空时，返回nil</li>
+</ul>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(e *Element)</span></span> Next() *Element &#123;</span><br><span class="line">    <span class="keyword">if</span> p := e.next; e.list != <span class="literal">nil</span> &amp;&amp; p != &amp;e.list.root &#123;</span><br><span class="line">        <span class="keyword">return</span> p</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">nil</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(e *Element)</span></span> Prev() *Element &#123;</span><br><span class="line">    <span class="keyword">if</span> p := e.prev; e.list != <span class="literal">nil</span> &amp;&amp; p != &amp;e.list.root &#123;</span><br><span class="line">        <span class="keyword">return</span> p</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">nil</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">New</span><span class="params">()</span></span> *List &#123; </span><br><span class="line">    <span class="keyword">return</span> <span class="built_in">new</span>(List).Init() </span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(l *List)</span></span> Len() <span class="type">int</span> &#123;</span><br><span class="line">    <span class="keyword">return</span> l.<span class="built_in">len</span> </span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(l *List)</span></span> Front() *Element &#123;</span><br><span class="line">    <span class="keyword">if</span> l.<span class="built_in">len</span> == <span class="number">0</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">nil</span></span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> l.root.next</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(l *List)</span></span> Back() *Element &#123;</span><br><span class="line">    <span class="keyword">if</span> l.<span class="built_in">len</span> == <span class="number">0</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">nil</span></span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> l.root.prev</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+<h2 id="插入元素"><a href="#插入元素" class="headerlink" title="插入元素"></a>插入元素</h2><ul>
+<li><code>insert()</code>：<strong>未导出函数</strong>。在元素<code>at</code>的位置后面插入一个元素，链表长度加一，返回插入的元素</li>
+<li><code>insertValue()</code>：<strong>未导出函数</strong>。将<code>Value</code>包装成<code>Element</code>然后进行<code>insert()</code></li>
+<li><code>InsertBefore()</code>：调用<code>insertValue()</code>在元素<code>mark</code>前插入。要求元素<code>mark</code>属于调用的链表对象且不为<code>nil</code></li>
+<li><code>InsertAfter()</code>：与<code>InsertBefore()</code>类似，在元素<code>mark</code>后插入</li>
+<li><code>PushFront()</code>：调用<code>insertValue()</code>方法在表头插入。返回插入的元素</li>
+<li><code>PushBack()</code>：调用<code>insertValue()</code>方法在表尾插入。返回插入的元素</li>
+</ul>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(l *List)</span></span> insert(e, at *Element) *Element &#123;</span><br><span class="line">    e.prev = at</span><br><span class="line">    e.next = at.next</span><br><span class="line">    e.prev.next = e</span><br><span class="line">    e.next.prev = e</span><br><span class="line">    e.list = l</span><br><span class="line">    l.<span class="built_in">len</span>++</span><br><span class="line">    <span class="keyword">return</span> e</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(l *List)</span></span> insertValue(v <span class="keyword">interface</span>&#123;&#125;, at *Element) *Element &#123;</span><br><span class="line">    <span class="keyword">return</span> l.insert(&amp;Element&#123;Value: v&#125;, at)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(l *List)</span></span> InsertBefore(v <span class="keyword">interface</span>&#123;&#125;, mark *Element) *Element &#123;</span><br><span class="line">    <span class="keyword">if</span> mark.list != l &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">nil</span></span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> l.insertValue(v, mark.prev)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(l *List)</span></span> InsertAfter(v <span class="keyword">interface</span>&#123;&#125;, mark *Element) *Element &#123;</span><br><span class="line">    <span class="keyword">if</span> mark.list != l &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">nil</span></span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> l.insertValue(v, mark)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(l *List)</span></span> PushFront(v <span class="keyword">interface</span>&#123;&#125;) *Element &#123;</span><br><span class="line">    l.lazyInit()</span><br><span class="line">    <span class="keyword">return</span> l.insertValue(v, &amp;l.root)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(l *List)</span></span> PushBack(v <span class="keyword">interface</span>&#123;&#125;) *Element &#123;</span><br><span class="line">    l.lazyInit()</span><br><span class="line">    <span class="keyword">return</span> l.insertValue(v, l.root.prev)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+<h2 id="删除元素"><a href="#删除元素" class="headerlink" title="删除元素"></a>删除元素</h2><ul>
+<li><code>remove()</code>：<strong>未导出函数</strong>。从链表中删除元素<code>e</code>，链表长度减一，返回被删除的元素</li>
+<li><code>Remove()</code>：当元素<code>e</code>属于被调用链表的元素时，调用<code>remove()</code>函数，返回<code>e.Value</code></li>
+</ul>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(l *List)</span></span> remove(e *Element) *Element &#123;</span><br><span class="line">    e.prev.next = e.next</span><br><span class="line">    e.next.prev = e.prev</span><br><span class="line">    e.next = <span class="literal">nil</span>     <span class="comment">// 避免内存泄漏</span></span><br><span class="line">    e.prev = <span class="literal">nil</span>     <span class="comment">// 避免内存泄漏</span></span><br><span class="line">    e.list = <span class="literal">nil</span></span><br><span class="line">    l.<span class="built_in">len</span>--</span><br><span class="line">    <span class="keyword">return</span> e</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(l *List)</span></span> Remove(e *Element) <span class="keyword">interface</span>&#123;&#125; &#123;</span><br><span class="line">    <span class="keyword">if</span> e.list == l &#123;</span><br><span class="line">        l.remove(e)</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> e.Value</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+<h2 id="移动元素"><a href="#移动元素" class="headerlink" title="移动元素"></a>移动元素</h2><ul>
+<li><code>move()</code>：<strong>未导出函数</strong>。将元素<code>e</code>移至元素<code>at</code>的后面，返回元素<code>e</code></li>
+<li><code>MoveToFront()</code>：将元素<code>e</code>移至表头。要求元素<code>e</code>属于被调用链表的元素</li>
+<li><code>MoveToBack()</code>：将元素<code>e</code>移至表尾。要求元素<code>e</code>属于被调用链表的元素</li>
+<li><code>MoveBefore()</code>：将元素<code>e</code>移至元素<code>mark</code>的前面。要求元素<code>e</code>属于被调用链表的元素且不为元素<code>mark</code></li>
+<li><code>MoveAfter()</code>：与<code>MoveBefore()</code>类似，移至其后面</li>
+</ul>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(l *List)</span></span> move(e, at *Element) *Element &#123;</span><br><span class="line">    <span class="keyword">if</span> e == at &#123;</span><br><span class="line">        <span class="keyword">return</span> e</span><br><span class="line">    &#125;</span><br><span class="line">    e.prev.next = e.next</span><br><span class="line">    e.next.prev = e.prev</span><br><span class="line"></span><br><span class="line">    e.prev = at</span><br><span class="line">    e.next = at.next</span><br><span class="line">    e.prev.next = e</span><br><span class="line">    e.next.prev = e</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> e</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(l *List)</span></span> MoveToFront(e *Element) &#123;</span><br><span class="line">    <span class="keyword">if</span> e.list != l || l.root.next == e &#123;</span><br><span class="line">        <span class="keyword">return</span></span><br><span class="line">    &#125;</span><br><span class="line">    l.move(e, &amp;l.root)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(l *List)</span></span> MoveToBack(e *Element) &#123;</span><br><span class="line">    <span class="keyword">if</span> e.list != l || l.root.prev == e &#123;</span><br><span class="line">        <span class="keyword">return</span></span><br><span class="line">    &#125;</span><br><span class="line">    l.move(e, l.root.prev)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(l *List)</span></span> MoveBefore(e, mark *Element) &#123;</span><br><span class="line">    <span class="keyword">if</span> e.list != l || e == mark || mark.list != l &#123;</span><br><span class="line">        <span class="keyword">return</span></span><br><span class="line">    &#125;</span><br><span class="line">    l.move(e, mark.prev)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(l *List)</span></span> MoveAfter(e, mark *Element) &#123;</span><br><span class="line">    <span class="keyword">if</span> e.list != l || e == mark || mark.list != l &#123;</span><br><span class="line">        <span class="keyword">return</span></span><br><span class="line">    &#125;</span><br><span class="line">    l.move(e, mark)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+<h2 id="合并链表"><a href="#合并链表" class="headerlink" title="合并链表"></a>合并链表</h2><ul>
+<li><code>PushBackList()</code>：将另一个链表<strong>浅拷贝</strong>到当前链表的末尾。要求两个链表均不为<code>nil</code></li>
+<li><code>PushFronList()</code>：将另一个链表<strong>浅拷贝</strong>到当前链表的开头。要求两个链表均不为<code>nil</code></li>
+</ul>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(l *List)</span></span> PushBackList(other *List) &#123;</span><br><span class="line">    l.lazyInit()</span><br><span class="line">    <span class="keyword">for</span> i, e := other.Len(), other.Front(); i &gt; <span class="number">0</span>; i, e = i<span class="number">-1</span>, e.Next() &#123;</span><br><span class="line">        l.insertValue(e.Value, l.root.prev)</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(l *List)</span></span> PushFrontList(other *List) &#123;</span><br><span class="line">    l.lazyInit()</span><br><span class="line">    <span class="keyword">for</span> i, e := other.Len(), other.Back(); i &gt; <span class="number">0</span>; i, e = i<span class="number">-1</span>, e.Prev() &#123;</span><br><span class="line">        l.insertValue(e.Value, &amp;l.root)</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+<h1 id="使用案例"><a href="#使用案例" class="headerlink" title="使用案例"></a>使用案例</h1><p><code>list</code>链表的基础使用</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">    l := list.New()</span><br><span class="line">    e4 := l.PushBack(<span class="number">4</span>)</span><br><span class="line">    e1 := l.PushFront(<span class="number">1</span>)</span><br><span class="line">    l.InsertBefore(<span class="number">3</span>, e4)</span><br><span class="line">    l.InsertAfter(<span class="number">2</span>, e1)</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 遍历输出链表内容</span></span><br><span class="line">    <span class="keyword">for</span> e := l.Front(); e != <span class="literal">nil</span>; e = e.Next() &#123;</span><br><span class="line">        fmt.Println(e.Value)</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>输出结果：</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="number">1</span></span><br><span class="line"><span class="number">2</span></span><br><span class="line"><span class="number">3</span></span><br><span class="line"><span class="number">4</span></span><br></pre></td></tr></table></figure>
+
+
+
+<p> 使用<code>list</code>实现栈</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">    <span class="comment">// 实现栈</span></span><br><span class="line">    stack := list.New()</span><br><span class="line">    <span class="comment">// 栈的push</span></span><br><span class="line">    stack.PushBack(<span class="number">1</span>)</span><br><span class="line">    stack.PushBack(<span class="string">&quot;red&quot;</span>)</span><br><span class="line">    stack.PushBack(<span class="number">3.1415</span>)</span><br><span class="line">    <span class="keyword">for</span> stack.Len() != <span class="number">0</span> &#123;</span><br><span class="line">        <span class="comment">// 栈的pop</span></span><br><span class="line">        fmt.Println(stack.Remove(stack.Back()))</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>输出结果：</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="number">3.1415</span></span><br><span class="line">red</span><br><span class="line"><span class="number">1</span></span><br></pre></td></tr></table></figure>
+
+
+
+<p>使用<code>list</code>实现队列</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">    queue := list.New()</span><br><span class="line">    <span class="comment">// 队列的入队操作enQueue</span></span><br><span class="line">    queue.PushBack(<span class="number">1</span>)</span><br><span class="line">    queue.PushBack(<span class="number">2</span>)</span><br><span class="line">    queue.PushBack(<span class="number">3</span>)</span><br><span class="line">    queue.PushBack(<span class="number">4</span>)</span><br><span class="line">    <span class="keyword">for</span> queue.Len() &gt; <span class="number">0</span> &#123;</span><br><span class="line">        <span class="comment">// 队列的出队操作deQueue</span></span><br><span class="line">        fmt.Println(queue.Remove(queue.Front()))</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>输出结果：</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="number">1</span></span><br><span class="line"><span class="number">2</span></span><br><span class="line"><span class="number">3</span></span><br><span class="line"><span class="number">4</span></span><br></pre></td></tr></table></figure>
+
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">文章作者: </span><span class="post-copyright-info"><a href="https://kiceamber.top">KiceAmber</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">文章链接: </span><span class="post-copyright-info"><a href="https://kiceamber.top/2022/08/02/Golang%E7%9A%84List%E5%AE%B9%E5%99%A8/">https://kiceamber.top/2022/08/02/Golang%E7%9A%84List%E5%AE%B9%E5%99%A8/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="https://kiceamber.top" target="_blank">KiceAmberのBlog</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/Golang/">Golang</a></div><div class="post_share"><div class="social-share" data-image="https://s2.loli.net/2022/08/02/fStp4cIjMhH8un3.jpg" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><div class="next-post pull-full"><a href="/2022/08/01/Redis%E9%85%8D%E7%BD%AE%E6%96%87%E4%BB%B6/"><img class="next-cover" src="https://s2.loli.net/2022/07/31/WRUbanrkLdxJEyB.jpg" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post"><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">Redis中的配置文件详解</div></div></a></div></nav></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="is-center"><div class="avatar-img"><img src="https://s2.loli.net/2022/07/31/Jb6nEp37uv8gelX.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info__name">KiceAmber</div><div class="author-info__description">Talk is cheap.Show me the code</div></div><div class="card-info-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">2</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">2</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">1</div></a></div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#list%E5%8C%85"><span class="toc-number">1.</span> <span class="toc-text">list包</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E6%96%B9%E6%B3%95%E5%AE%9E%E7%8E%B0"><span class="toc-number">2.</span> <span class="toc-text">方法实现</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%88%9D%E5%A7%8B%E5%8C%96%E9%93%BE%E8%A1%A8"><span class="toc-number">2.1.</span> <span class="toc-text">初始化链表</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%8E%B7%E5%8F%96%E5%85%83%E7%B4%A0%E6%88%96%E9%93%BE%E8%A1%A8%E6%8C%87%E9%92%88"><span class="toc-number">2.2.</span> <span class="toc-text">获取元素或链表指针</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%8F%92%E5%85%A5%E5%85%83%E7%B4%A0"><span class="toc-number">2.3.</span> <span class="toc-text">插入元素</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%88%A0%E9%99%A4%E5%85%83%E7%B4%A0"><span class="toc-number">2.4.</span> <span class="toc-text">删除元素</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%A7%BB%E5%8A%A8%E5%85%83%E7%B4%A0"><span class="toc-number">2.5.</span> <span class="toc-text">移动元素</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%90%88%E5%B9%B6%E9%93%BE%E8%A1%A8"><span class="toc-number">2.6.</span> <span class="toc-text">合并链表</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%BD%BF%E7%94%A8%E6%A1%88%E4%BE%8B"><span class="toc-number">3.</span> <span class="toc-text">使用案例</span></a></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/2022/08/02/Golang%E7%9A%84List%E5%AE%B9%E5%99%A8/" title="Golang的list容器"><img src="https://s2.loli.net/2022/08/02/fStp4cIjMhH8un3.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Golang的list容器"/></a><div class="content"><a class="title" href="/2022/08/02/Golang%E7%9A%84List%E5%AE%B9%E5%99%A8/" title="Golang的list容器">Golang的list容器</a><time datetime="2022-08-02T10:10:31.000Z" title="发表于 2022-08-02 18:10:31">2022-08-02</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2022/08/01/Redis%E9%85%8D%E7%BD%AE%E6%96%87%E4%BB%B6/" title="Redis中的配置文件详解"><img src="https://s2.loli.net/2022/07/31/WRUbanrkLdxJEyB.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Redis中的配置文件详解"/></a><div class="content"><a class="title" href="/2022/08/01/Redis%E9%85%8D%E7%BD%AE%E6%96%87%E4%BB%B6/" title="Redis中的配置文件详解">Redis中的配置文件详解</a><time datetime="2022-08-01T08:46:26.000Z" title="发表于 2022-08-01 16:46:26">2022-08-01</time></div></div></div></div></div></div></main><footer id="footer"><div id="footer-wrap"><div class="copyright">&copy;2022 By KiceAmber</div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="浅色和深色模式转换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside_config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox.umd.min.js"></script><script src="https://cdn.jsdelivr.net/npm/node-snackbar/dist/snackbar.min.js"></script><div class="js-pjax"></div><script defer="defer" id="ribbon" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/canvas-ribbon.min.js" size="150" alpha="0.6" zIndex="-1" mobile="false" data-click="false"></script></div></body></html>
